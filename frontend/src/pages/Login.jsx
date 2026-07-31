@@ -1,4 +1,5 @@
-import { useSignIn } from "@clerk/react";
+// import { useSignIn , useUser} from "@clerk/react";
+// import { useClerk } from "@clerk/react";
 import { useState } from "react";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
@@ -9,15 +10,21 @@ import { AUTH_ROUTES } from "../constants/endpoints";
 import axiosInstance from "../lib/axios";
 import { setUserData } from "../redux/slices/userSlice";
 
+
+
+import {signInWithPopup} from "firebase/auth"
+import {auth, googleProvider} from "../lib/firebase"
+
 function SignIn() {
   const dispatch = useDispatch();
-  const { signIn } = useSignIn();
-
+  // const { signIn} = useSignIn();
+  // const {isSignedIn} = useUser()
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
 
   const handleLogin = async () => {
     setLoading(true);
@@ -39,27 +46,72 @@ function SignIn() {
   };
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      const result = await signIn.create({
-        strategy: "oauth_google",
-        redirectUrl: `${window.location.origin}/sso-callback`,
-      });
+    // setLoading(true);
+    // try {
+    //   const result = await signIn.authenticateWithRedirect({
+    //     strategy: "oauth_google",
+    //     redirectUrl: `${window.location.origin}/sso-callback`,
+    //     redirectUrlComplete: "/sso-callback",
+    //   });
 
-      if (result.status === "complete") {
-        const ssoResult = await axiosInstance.post(AUTH_ROUTES.LOGIN_WITH_SSO, {
-          clerkId: result.createdSessionId,
-        });
-        toast.success(ssoResult.data.message);
-        dispatch(setUserData(ssoResult.data.user));
-        navigate("/");
-      }
-    } catch (error) {
-      console.error("Google login error:", error);
-      toast.error(error.message || "Google login failed");
-    } finally {
-      setLoading(false);
-    }
+    //   if (result.status === "complete") {
+    //     const ssoResult = await axiosInstance.post(AUTH_ROUTES.LOGIN_WITH_SSO, {
+    //       clerkId: result.createdSessionId,
+    //     });
+    //     toast.success(ssoResult.data.message);
+    //     dispatch(setUserData(ssoResult.data.user));
+    //     navigate("/");
+    //   }
+    // } catch (error) {
+    //   console.error("Google login error:", error);
+    //   toast.error(error.message || "Google login failed");
+    // } finally {
+    //   setLoading(false);
+    // }
+
+
+
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user
+
+    const idToken = await user.getIdToken();
+
+
+// 🔥 backend ko bhej
+const res = await axiosInstance.post(AUTH_ROUTES.LOGIN_WITH_SSO, {
+  idToken,
+});
+
+// redux set
+dispatch(setUserData(res.data.user));
+
+// navigate
+navigate("/");
+
+
+
+
+    
+  //  dispatch(
+  //     setUserData({
+  //       name: user.displayName,
+  //       email: user.email,
+  //       photo: user.photoURL,
+  //       uid: user.uid,
+  //     })
+  //   );
+
+
+  //    toast.success("Google Login Successful");
+
+  //     navigate("/");
+
+  } catch (error) {
+    console.log(error.code, error.message);
+    console.log("Google login fails")
+  }
+
   };
 
   return (
@@ -259,6 +311,7 @@ function SignIn() {
   transition-all duration-200 cursor-pointer mb-7"
             onClick={handleGoogleLogin}
             // disabled={!isLoaded}
+            
             type="button"
           >
             <FcGoogle size={18} />

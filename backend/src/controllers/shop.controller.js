@@ -7,14 +7,14 @@ import {
   uploadToCloudinary,
 } from "../utils/cloudinary.util.js";
 
-export const createShop = async (req, res, next) => {
+export const createShop = async (req, res, /*next*/) => {
   try {
     let userId = req.user._id;
     const { name, city, address, state } = req.body;
     let image;
     if (req.file) {
       let dataURL = getDataURLFromFile(req.file);
-      image = await uploadToCloudinary(dataURL, next);
+      image = await uploadToCloudinary(dataURL, /*next*/);
     }
     const newShop = await ShopModel.create({
       name,

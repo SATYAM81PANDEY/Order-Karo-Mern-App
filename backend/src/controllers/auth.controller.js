@@ -1,7 +1,12 @@
+import {adminAuth} from "../config/firebase.js";
 import UserModel from "../models/User.model.js";
 import ErrorResponse from "../utils/ApiError.util.js";
 import { generateToken } from "../utils/jwt.util.js";
 import { sendOtpMail } from "../utils/nodemailer.util.js";
+
+
+
+
 
 export const register = async (req, res, next) => {
   const { fullName, email, password, mobile, role } = req.body;
@@ -181,20 +186,87 @@ export const resetPassword = async (req, res, next) => {
 };
 
 export const googleAuth = async (req, res, next) => {
-  console.log(req.body);
-  const { fullName, mobile, email } = req.body;
+ 
+  // console.log("BODY:", req.body);
+  // // console.log("CLERK AUTH:", req.auth);
+
+  // const { fullName, mobile, email } = req.body;
+  // try {
+  //   let user = await UserModel.findOne({ email });
+  //   if (!user) {
+  //     user = await UserModel.create({ fullName, mobile, email, role: "user" });
+  //   }
+
+  //   const token = generateToken(user._id);
+  
+  //   console.log("Clerk Token", token);  
+
+
+  //   res.cookie("token", token, {
+  //     secure: false,
+  //     sameSite: "strict",
+  //     maxAge: 7 * 24 * 60 * 60 * 1000,
+  //     httpOnly: true,
+  //   });
+
+  //   res.status(200).json({
+  //     success: true,
+  //     message: "User logged in successfully",
+  //     user,
+  //   });
+  // } catch (error) {
+  //   next(error);
+  // }
+
+
+
+
+
+
+ const { idToken } = req.body;
   try {
-    let user = await UserModel.findOne({ email });
+    if (!idToken) {
+      return next(new ErrorResponse("Missing Google ID token", 400));
+    }
+
+    // Verifies the token's signature against Firebase's servers — this is
+    // what makes it safe to trust; a client can't forge this.
+    let decoded;
+    try {
+      decoded = await adminAuth.verifyIdToken(idToken);
+    } catch (err) {
+      console.error("Firebase token verification failed:", err.message);
+      return next(new ErrorResponse("Invalid or expired Google token", 401));
+    }
+
+    const { uid, email, name } = decoded;
+    if (!email) {
+      return next(new ErrorResponse("Google account has no email", 400));
+    }
+
+    let user = await UserModel.findOne({ firebaseUid: uid });
+    if (!user) user = await UserModel.findOne({ email });
+
     if (!user) {
-      user = await UserModel.create({ fullName, mobile, email, role: "user" });
+      user = await UserModel.create({
+        fullName: name || "User",
+        email,
+        mobile: "0000000000", // Google sign-in doesn't provide a phone number
+        role: "user",
+        firebaseUid: uid,
+      });
+    } else if (!user.firebaseUid) {
+      user.firebaseUid = uid;
+      await user.save();
     }
 
     const token = generateToken(user._id);
     res.cookie("token", token, {
-      secure: false,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
+      path: "/",
     });
 
     res.status(200).json({
@@ -205,4 +277,6 @@ export const googleAuth = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+
+
 };

@@ -55,6 +55,13 @@ function Checkout() {
   const dispatch = useDispatch();
 
   const { location, address } = useSelector((state) => state.map);
+ 
+  useEffect(() => {
+    console.log("Setp-1 Location", location);
+  }, [location])
+
+
+
   const { cartItems, totalAmount, userData } = useSelector(
     (state) => state.user,
   );
@@ -84,13 +91,24 @@ function Checkout() {
   };
 
   const getCurrentLocation = () => {
-    const latitude = userData.location.coordinates[1];
+    /*const latitude = userData.location.coordinates[1];
     const longitude = userData.location.coordinates[0];
     dispatch(setLocation({ lat: latitude, lon: longitude }));
-    getAddressByLatLng(latitude, longitude);
+    getAddressByLatLng(latitude, longitude); */
+
+
+
+    navigator.geolocation.getCurrentPosition((pos) => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+
+    dispatch(setLocation({ lat, lon }));
+    getAddressByLatLng(lat, lon);
+  });
   };
 
   const getAddressByLatLng = async (lat, lng) => {
+    console.log("Step-2 Sending",lat, lng)
     try {
       const result = await axios.get(
         `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&format=json&apiKey=${apiKey}`,
@@ -139,31 +157,31 @@ function Checkout() {
     }
   };
 
-  // const openRazorpayWindow = (orderId, razorOrder) => {
-  //   const options = {
-  //     key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-  //     amount: razorOrder.amount,
-  //     currency: "INR",
-  //     name: "OrderKaro",
-  //     description: "Food Delivery",
-  //     order_id: razorOrder.id,
-  //     handler: async function (response) {
-  //       try {
-  //         const result = await axios.post(
-  //           `${serverUrl}/api/order/verify-payment`,
-  //           { razorpay_payment_id: response.razorpay_payment_id, orderId },
-  //           { withCredentials: true },
-  //         );
-  //         // dispatch(addMyOrder(result.data));
-  //         navigate("/order-placed");
-  //       } catch (error) {
-  //         console.log(error);
-  //       }
-  //     },
-  //   };
-  //   const rzp = new window.Razorpay(options);
-  //   rzp.open();
-  // };
+  const openRazorpayWindow = (orderId, razorOrder) => {
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: razorOrder.amount,
+      currency: "INR",
+      name: "OrderKaro",
+      description: "Food Delivery",
+      order_id: razorOrder.id,
+      handler: async function (response) {
+        try {
+          const result = await axios.post(
+            `${serverUrl}/api/order/verify-payment`,
+            { razorpay_payment_id: response.razorpay_payment_id, orderId },
+            { withCredentials: true },
+          );
+          // dispatch(addMyOrder(result.data));
+          navigate("/order-placed");
+        } catch (error) {
+          console.log(error);
+        }
+      },
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
 
   return (
     <div className="min-h-screen w-full bg-stone-50">

@@ -1,6 +1,6 @@
 import cloudinary from "../config/cloudinary.config.js";
 
-export const uploadToCloudinary = async (filePath, next) => {
+export const uploadToCloudinary = async (filePath /*next*/ ) => {
   try {
     let uploadedResult = await cloudinary.uploader.upload(filePath, {
       folder: "food-delivery-app",
@@ -8,7 +8,7 @@ export const uploadToCloudinary = async (filePath, next) => {
     });
     return uploadedResult.secure_url;
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 

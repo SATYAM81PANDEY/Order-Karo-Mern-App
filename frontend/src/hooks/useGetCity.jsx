@@ -12,10 +12,9 @@ function useGetCity() {
   const dispatch = useDispatch();
   const { userData } = useSelector((state) => state.user);
   const apiKey = import.meta.env.VITE_GEOAPIFY_API_KEY;
-  console.log("apiKey: ", apiKey);
+ 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(async (position) => {
-      //   console.log(position);
       const latitude = position.coords.latitude;
       const longitude = position.coords.longitude;
 
@@ -40,8 +39,6 @@ function useGetCity() {
             result?.data?.results[0].address_line1,
         ),
       );
-
-      console.log(result?.data?.results[0].address_line2);
 
       dispatch(setAddress(result?.data?.results[0].address_line2));
     });

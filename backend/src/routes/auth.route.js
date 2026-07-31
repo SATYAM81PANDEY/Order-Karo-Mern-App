@@ -4,7 +4,7 @@ import {
   googleAuth,
   login,
   logout,
-  register,
+  register, 
   resetPassword,
   sendOTP,
   verifyOTP,

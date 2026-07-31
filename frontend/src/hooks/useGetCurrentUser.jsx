@@ -10,6 +10,7 @@ function useGetCurrentUser() {
 
   useEffect(() => {
     const fetchUser = async () => {
+
       try {
         const res = await axiosInstance.get(USER_ROUTES.CURRENT_USER);
         const user = res.data.user;
@@ -31,7 +32,7 @@ function useGetCurrentUser() {
         console.log("err: ", err);
         dispatch(clearUser());
       }
-    };
+    }
 
     fetchUser();
   }, [dispatch]);

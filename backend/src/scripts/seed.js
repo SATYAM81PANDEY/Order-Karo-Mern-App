@@ -4,9 +4,12 @@ import ItemModel from "../models/Item.model.js";
 import OrderModel from "../models/order.model.js";
 import ShopModel from "../models/Shop.model.js";
 import UserModel from "../models/User.model.js";
+import dotenv from "dotenv";
+dotenv.config({ path: "../../.env" });
 
 const MONGO_URI =
-  process.env.MONGO_URI || "mongodb://localhost:27017/food-delivery-app";
+  process.env.MONGODB_URL || "mongodb://localhost:27017/food-delivery-app"; 
+
 
 // ── IDs ───────────────────────────────────────────────────────────
 const IDS = {

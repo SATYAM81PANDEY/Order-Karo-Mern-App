@@ -5,6 +5,7 @@ import ErrorResponse from "../utils/ApiError.util.js";
 
 export const authenticate = async (req, res, next) => {
   try {
+
     const token = req?.cookies?.token;
     if (!token) return next(new ErrorResponse(`Please login`, 401));
 
@@ -12,7 +13,7 @@ export const authenticate = async (req, res, next) => {
 
     let user = await UserModel.findById(decodedToken.payload);
     if (!user) return next(new ErrorResponse(`Invalid Session`, 401));
-
+ 
     req.user = user;
     next();
   } catch (error) {

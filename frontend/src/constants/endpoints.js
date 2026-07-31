@@ -10,7 +10,7 @@ export const AUTH_ROUTES = {
   LOGOUT: `${BACKEND_URL}/api/v1/auth/logout`,
   LOGIN_WITH_SSO: `${BACKEND_URL}/api/v1/auth/login-with-sso`,
 };
-
+ 
 export const USER_ROUTES = {
   CURRENT_USER: `${BACKEND_URL}/api/v1/user/current-user`,
 };
