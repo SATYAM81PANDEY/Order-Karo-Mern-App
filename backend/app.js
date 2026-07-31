@@ -18,7 +18,7 @@ import webhookRouter from "./src/routes/webhook.route.js";
 const app = express();
 app.use(
   cors({
-    origin: FRONTEND_URL || "https://order-karo-mern-app-bcy3.vercel.app/login",
+    origin: FRONTEND_URL || "https://order-karo-mern-app-bcy3.vercel.app",
     credentials: true,
   }),
 );
