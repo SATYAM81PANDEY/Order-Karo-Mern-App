@@ -18,7 +18,7 @@ import webhookRouter from "./src/routes/webhook.route.js";
 const app = express();
 app.use(
   cors({
-    origin: FRONTEND_URL || "http://localhost:5173",
+    origin: FRONTEND_URL || "https://order-karo-mern-app-bcy3.vercel.app/login",
     credentials: true,
   }),
 );
